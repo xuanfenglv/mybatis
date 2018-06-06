@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dao.UserMapper">
+    <sql id="selectAll">
+        select * from `user`
+    </sql>
+    <!-- parameterType可以不写 -->
+    <select id="select" resultType="model.User">
+        select * from `user` where id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="model.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `user`(name,age) VALUES (#{name},#{age})
+    </insert>
+
+    <update id="update" parameterType="model.User">
+        UPDATE `user`
+        <set>
+            <if test="name!=null">
+                name=#{name},
+            </if>
+            <if test="age!=0">
+                age=#{age},
+            </if>
+        </set>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="delete" parameterType="int" >
+        DELETE FROM `user` WHERE id = #{id}
+    </delete>
+
+    <select id="selectByParams" resultType="model.User">
+        select * from `user`
+        <where>
+            <choose>
+                <when test="id!=0">
+                    id=#{id}
+                </when>
+                <otherwise>
+                    <if test="name!=null">
+                        /* 生成一个变量 */
+                        <bind name="pattern" value="'%' + name + '%'" />
+                        AND name like #{pattern}
+                    </if>
+                    <if test="age!=0">
+                        AND age=#{age}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <!-- resultType 可以填map、hashmap、java.util.Map-->
+    <select id="selectAsMap"  resultType="java.util.Map">
+        select * from `user`
+    </select>
+
+    <select id="selectInArray"  resultType="model.User">
+        select * from `user`
+        <where>
+            <if test="array!=null and array.length>0">
+                id IN
+                <foreach collection="array" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+    <select id="selectInList"  resultType="model.User">
+        select * from `user`
+        <where>
+            /*collection、list*/
+            <if test="collection!=null and collection.size()>0">
+                id IN
+                <foreach collection="collection" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+    <select id="selectInSet"  resultType="model.User">
+        select * from `user`
+        <where>
+            /*collection、list*/
+            <if test="collection!=null and collection.size()>0">
+                id IN
+                <foreach collection="collectio" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+
+
+    <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `user`(name,age) VALUES
+        <foreach item="item" collection="list" separator=",">
+            (#{item.name},#{item.age})
+        </foreach>
+    </insert>
+</mapper>
